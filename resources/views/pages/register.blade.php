@@ -279,6 +279,7 @@
                     maxlength: 4,
                 }
             },
+
             messages: {
                 username: "Please enter a valid Name."
             }
