@@ -21,4 +21,4 @@ Route::get('/', function () {
 Route::get('/register',[RegisterController::class,'index']);
 Route::post('/register-create',[RegisterController::class,'store'])->name('register.create');
 Route::get('/register-edit/{id}',[RegisterController::class,'edit'])->name('register.edit');
-Route::post('/register-update',[RegisterController::class,'update'])->name('register.update');
+Route::post('/register-update/{id}',[RegisterController::class,'update'])->name('register.update');

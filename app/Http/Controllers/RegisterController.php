@@ -35,8 +35,8 @@ class RegisterController extends Controller
         return response()->json($userData);
     }
 
-    public function update(RegisterRequest $request){
-        $user = User::find($request->id);
+    public function update(RegisterRequest $request, $id){
+        $user = User::find($id);
         if (!$user)
             return response()->json([
                 'status' => false,

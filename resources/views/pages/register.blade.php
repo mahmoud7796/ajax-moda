@@ -4,6 +4,8 @@
     <title>Ajax CRUD Modal</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     {{--jquery and ajax--}}
@@ -150,31 +152,31 @@
                     <div class="form-group">
                         <label for="firstNameEdit">First Name</label>
                         <input type="text" onblur="" name="firstName" class="form-control" id="firstNameEdit" placeholder="Enter First Name">
-                        <small id="firstName_error" class="form-text text-danger"></small>
+                        <small id="firstName_edit_error" class="form-text text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="middleNameEdit">Middle Name</label>
                         <input type="text" name="middleName" class="form-control" id="middleNameEdit" placeholder="Enter Middle Name">
-                        <small id="middleName_error" class="form-text text-danger"></small>
+                        <small id="middleName_edit_error" class="form-text text-danger"></small>
 
                     </div>
                     <div class="form-group">
                         <label for="lastNameEdit">Last Name</label>
                         <input type="text" name="lastName" class="form-control" id="lastNameEdit" placeholder="Enter Last Name">
-                        <small id="lastName_error" class="form-text text-danger"></small>
+                        <small id="lastName_edit_error" class="form-text text-danger"></small>
                     </div>
-
+                    <input type="hidden" id="userIdEdit" name="userIdEdit" value="">
                     <div class="form-group">
                         <label for="emailEdit">Email address</label>
                         <input type="email" name="email" class="form-control" id="emailEdit" aria-describedby="emailHelp" placeholder="Enter email">
                         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-                        <small id="email_error" class="form-text text-danger"></small>
+                        <small id="email_edit_error" class="form-text text-danger"></small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="update_user" class="btn btn-primary">Save changes</button>
+                <button type="button"  id="update_user" class="btn btn-primary">Save changes</button>
             </div>
         </div>
     </div>
@@ -220,36 +222,59 @@
             }
         });
     });
+
+
+
     $('body').on('click', '#getUser', function (event) {
         event.preventDefault();
-        var id = $(this).data('id');
-        console.log(id)
-        $.get('register-edit/' + id, function (data) {
+        var user_id = $(this).data('id');
+        console.log(user_id)
+        $.get('register-edit/' + user_id, function (data) {
             $('#firstNameEdit').val(data.firstName);
             $('#middleNameEdit').val(data.middleName);
             $('#lastNameEdit').val(data.lastName);
             $('#emailEdit').val(data.email);
+            $('#userIdEdit').val(user_id);
+
+
         })
     });
 
-    $(document).on('click', '#editUser', function(e){
-        e.preventDefault();
-        $('#firstName_error').text('');
-        $('#middleName_error').text('');
-        $('#lastName_error').text('');
-        $('#email_error').text('');
-        $('#password_error').text('');
-        $('#password_confirmation_error').text('');
 
-        var formData = new FormData($('#editForm')[0]);
-        var user_id = $(this).attr('edit_user_id');
+
+    $(document).on('click', '#update_user', function(e){
+        e.preventDefault();
+        $('#firstName_edit_error').text('');
+        $('#middleName_edit_error').text('');
+        $('#lastName_edit_error').text('');
+        $('#email_edit_errorr').text('');
+    //    var formData = new FormData($('#editForm')[0]);
+        var firstName = $("#firstNameEdit").val();
+        var middleName = $("#middleNameEdit").val();
+        var lastName = $("#lasttNameEdit").val();
+        var email= $("#emailEdit").val();
+        var user_id = $("#userIdEdit").val();
+
+        console.log(user_id)
+
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
         $.ajax({
             type: 'post',
             enctype: 'multipart/form-data',
-            url: "{{route('register.update')}}"+'/'+user_id,
-            data: {formData,
-            'id':user_id
+            url: 'register-update/' + user_id,
+            data: {
+                firstName:firstName,
+                middleName:middleName,
+                lastName:lastName,
+                email:email,
+
+
             },
             processData: false,
             contentType: false,
@@ -258,14 +283,14 @@
                 if(response){
                     $("#userTable tbody").prepend('<tr><td>'+response.firstName+'</td><td>'+response.middleName+'</td><td>'+response.lastName+'</td><td>'+response.email+'</td></tr>')
                     $('#userForm')[0].reset();
-                    $('#addUser').modal('hide');
+                    $('#editUser').modal('hide');
                     $('#msg-succ').show();
                 }
 
             }, error: function (reject){
                 var response = $.parseJSON(reject.responseText);
                 $.each(response.errors, function(key, val){
-                    $("#" + key + "_error").text(val[0]);
+                    $("#" + key + "_edit_error").text(val[0]);
                 });
             }
         });
