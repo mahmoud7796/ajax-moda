@@ -65,7 +65,7 @@
 
                 <div class="btn-group" role="group"
                      aria-label="Basic example">
-                    <a user_id = "{{$user -> id}}" class="delete btn btn-danger" href="">Delete</a>
+                    <a data-id = "{{$user -> id}}" class="delete btn btn-danger" href="">Delete</a>
                 </div>
 
             </td>
@@ -125,12 +125,13 @@
                         <input type="password" name="password_confirmation" class="form-control" id="exampleInputPassword1" placeholder="Confirm Your Password">
                         <small id="password_confirmation_error" class="form-text text-danger"></small>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" id="save_user" class="btn btn-primary">Save changes</button>
+                    </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="save_user" class="btn btn-primary">Save changes</button>
-            </div>
+
         </div>
     </div>
 </div>
@@ -141,7 +142,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Add New User</h5>
+                <h5 class="modal-title" id="exampleModalLongTitle">Edit User</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -149,34 +150,37 @@
             <div class="modal-body">
                 <form id="editForm">
                     @csrf
+                    <input type="hidden" name="mail" id="mail">
+
                     <div class="form-group">
                         <label for="firstNameEdit">First Name</label>
-                        <input type="text" onblur="" name="firstName" class="form-control" id="firstNameEdit" placeholder="Enter First Name">
+                        <input type="text" name="firstNameUpdate" class="form-control" id="firstNameEdit" placeholder="Enter First Name">
                         <small id="firstName_edit_error" class="form-text text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="middleNameEdit">Middle Name</label>
-                        <input type="text" name="middleName" class="form-control" id="middleNameEdit" placeholder="Enter Middle Name">
+                        <input type="text" name="middleNameUpdate" class="form-control" id="middleNameEdit" placeholder="Enter Middle Name">
                         <small id="middleName_edit_error" class="form-text text-danger"></small>
 
                     </div>
                     <div class="form-group">
                         <label for="lastNameEdit">Last Name</label>
-                        <input type="text" name="lastName" class="form-control" id="lastNameEdit" placeholder="Enter Last Name">
+                        <input type="text" name="lastNameUpdate" class="form-control" id="lastNameEdit" placeholder="Enter Last Name">
                         <small id="lastName_edit_error" class="form-text text-danger"></small>
                     </div>
                     <input type="hidden" id="userIdEdit" name="userIdEdit" value="">
                     <div class="form-group">
                         <label for="emailEdit">Email address</label>
-                        <input type="email" name="email" class="form-control" id="emailEdit" aria-describedby="emailHelp" placeholder="Enter email">
+                        <input type="email" name="emailUpdate" class="form-control" id="emailEdit" aria-describedby="emailHelp" placeholder="Enter email">
                         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                         <small id="email_edit_error" class="form-text text-danger"></small>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button"  id="update_user" class="btn btn-primary">Save changes</button>
+                    </div>
+
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button"  id="update_user" class="btn btn-primary">Save changes</button>
             </div>
         </div>
     </div>
@@ -196,6 +200,7 @@
         $('#password_confirmation_error').text('');
 
         var formData = new FormData($('#userForm')[0]);
+        console.log(formData)
 
         $.ajax({
             type: 'post',
@@ -207,7 +212,10 @@
             cache: false,
             success: function (response){
                 if(response){
-                    $("#userTable tbody").prepend('<tr><td>'+response.firstName+'</td><td>'+response.middleName+'</td><td>'+response.lastName+'</td><td>'+response.email+'</td></tr>')
+                    var stringEditUser= 'Edit User'
+                    var stringDeleteUser= "Delete"
+                    var newRow = $('<tr><td>'+response.firstName+'</td><td>'+response.middleName+'</td><td>'+response.lastName+'</td><td>'+response.email+'</td><td><div class="btn-group" role="group" aria-label="Basic example"><button data-id="userId" id="getUser" class="btn btn-primary" data-toggle="modal" data-target="#editUser" >'+stringEditUser+'</button></div><div class="btn-group" role="group" aria-label="Basic example"><button data-id="" id="deleteUser" class="delete btn btn-danger">'+stringDeleteUser+'</button></div></td></tr>')
+                    $("#userTable tbody").prepend(newRow)
                     $('#userForm')[0].reset();
                     $('#addUser').modal('hide');
                     $('#msg-succ').show();
@@ -248,15 +256,21 @@
         $('#middleName_edit_error').text('');
         $('#lastName_edit_error').text('');
         $('#email_edit_errorr').text('');
+
     //    var formData = new FormData($('#editForm')[0]);
         var firstName = $("#firstNameEdit").val();
         var middleName = $("#middleNameEdit").val();
-        var lastName = $("#lasttNameEdit").val();
+        var lastName = $("#lastNameEdit").val();
         var email= $("#emailEdit").val();
         var user_id = $("#userIdEdit").val();
+        var mail = $("#userIdEdit").val();
 
+
+        console.log(email)
+
+        console.log(firstName)
+        console.log(middleName)
         console.log(user_id)
-
 
         $.ajaxSetup({
             headers: {
@@ -267,21 +281,21 @@
         $.ajax({
             type: 'post',
             enctype: 'multipart/form-data',
-            url: 'register-update/' + user_id,
+            url: "{{url('register-update')}}" +'/'+ user_id,
             data: {
                 firstName:firstName,
                 middleName:middleName,
                 lastName:lastName,
                 email:email,
-
-
+                mail:mail,
             },
-            processData: false,
-            contentType: false,
             cache: false,
             success: function (response){
                 if(response){
-                    $("#userTable tbody").prepend('<tr><td>'+response.firstName+'</td><td>'+response.middleName+'</td><td>'+response.lastName+'</td><td>'+response.email+'</td></tr>')
+                    var stringEditUser= 'Edit User'
+                    var stringDeleteUser= "Delete"
+                    var newRow = $('<tr><td>'+response.firstName+'</td><td>'+response.middleName+'</td><td>'+response.lastName+'</td><td>'+response.email+'</td><td><div class="btn-group" role="group" aria-label="Basic example"><button data-id="userId" id="getUser" class="btn btn-primary" data-toggle="modal" data-target="#editUser" >'+stringEditUser+'</button></div><div class="btn-group" role="group" aria-label="Basic example"><button data-id="" id="deleteUser" class="delete btn btn-danger">'+stringDeleteUser+'</button></div></td></tr>')
+                    $("#userTable tbody").prepend(newRow)
                     $('#userForm')[0].reset();
                     $('#editUser').modal('hide');
                     $('#msg-succ').show();

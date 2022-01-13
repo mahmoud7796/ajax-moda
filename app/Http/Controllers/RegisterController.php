@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\RegisterRequestUpdate;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 
 class RegisterController extends Controller
@@ -19,7 +21,7 @@ class RegisterController extends Controller
             'middleName' =>  $request->middleName,
             'lastName' =>  $request->lastName,
             'email' =>  $request->email,
-            'password' =>  $request->password,
+            'password' =>  Hash::make($request->password),
         ]);
         if($user)
         return response()->json($user);
@@ -35,7 +37,7 @@ class RegisterController extends Controller
         return response()->json($userData);
     }
 
-    public function update(RegisterRequest $request, $id){
+    public function update(RegisterRequestUpdate $request, $id){
         $user = User::find($id);
         if (!$user)
             return response()->json([
